@@ -9,6 +9,12 @@ pub enum Error<E> {
     InvalidInputData,
 }
 
+/// Possible tempature output types
+pub enum TempType {
+    Celsius,
+    Fahrenheit,
+} 
+
 /// IC marker
 pub mod ic {
     /// MLX90614 IC marker

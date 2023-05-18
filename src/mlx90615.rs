@@ -1,7 +1,7 @@
 use crate::{
     ic,
     register_access::mlx90615::{self, Register, DEV_ADDR},
-    Error, Mlx9061x, SlaveAddr,
+    Error, Mlx9061x, SlaveAddr, types::TempType, 
 };
 use core::marker::PhantomData;
 use embedded_hal::{
@@ -42,17 +42,37 @@ where
     I2C: i2c::WriteRead<Error = E> + i2c::Write<Error = E>,
 {
     /// Read the ambient temperature in celsius degrees
-    pub fn ambient_temperature(&mut self) -> Result<f32, Error<E>> {
+    pub fn ambient_temperature(&mut self, temp_type: Option<TempType>) -> Result<f32, Error<E>> {
         let t = self.read_u16(Register::TA)?;
-        let t = f32::from(t) * 0.02 - 273.15;
-        Ok(t)
+        if let Some(tt) = temp_type {
+            match tt {
+                TempType::Celsius => Ok(
+                    f32::from(t) * 0.02 - 273.15
+                ),
+                TempType::Fahrenheit => Ok(
+                    (f32::from(t) * 0.02 - 273.15) * 1.80 + 32.00
+                ),
+            }
+        } else {
+            Ok(f32::from(t) * 0.02 - 273.15)
+        }
     }
 
     /// Read the object temperature in celsius degrees
-    pub fn object_temperature(&mut self) -> Result<f32, Error<E>> {
-        let t = self.read_u16(Register::TOBJ)?;
-        let t = f32::from(t) * 0.02 - 273.15;
-        Ok(t)
+    pub fn object_temperature(&mut self, temp_type: Option<TempType>) -> Result<f32, Error<E>> {
+        let t = self.read_u16(Register::TA)?;
+        if let Some(tt) = temp_type {
+            match tt {
+                TempType::Celsius => Ok(
+                    f32::from(t) * 0.02 - 273.15
+                ),
+                TempType::Fahrenheit => Ok(
+                    (f32::from(t) * 0.02 - 273.15) * 1.80 + 32.00
+                ),
+            }
+        } else {
+            Ok(f32::from(t) * 0.02 - 273.15)
+        }
     }
 
     /// Read the raw IR data
